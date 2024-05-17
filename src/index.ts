@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 
 import { userRouter } from './user/user.router';
+import { productionRouter } from './production/production.router';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use('/api/user', userRouter)
+app.use('/api/production', productionRouter);
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);

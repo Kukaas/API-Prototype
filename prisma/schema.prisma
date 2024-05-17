@@ -23,6 +23,7 @@ model Production {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   userId       String      @db.ObjectId  // The user who created the production
   productType  String
+  quantity     Int
   startTime    DateTime
   endTime      DateTime?
   status       String      @default("IN_PROGRESS") // Status can be "IN_PROGRESS" or "COMPLETED"

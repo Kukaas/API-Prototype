@@ -11,6 +11,7 @@ type User = {
 type Production = {
   productType: string;
   startTime: Date;
+  quantity: number;
   endTime?: Date;
   status: string;
   userEmail: string;
@@ -73,6 +74,7 @@ async function seed() {
             data: {
               productType: production.productType,
               startTime: production.startTime,
+              quantity: production.quantity,
               endTime: production.endTime,
               status: production.status,
               user: { connect: { id: user.id } },
@@ -193,6 +195,7 @@ function getProductions(): Array<Production> {
       productType: 'Polo',
       startTime: new Date('2022-01-01'),
       status: 'IN_PROGRESS',
+      quantity: 1,
       userEmail: 'jane@example.com',
     },
     {
@@ -200,6 +203,7 @@ function getProductions(): Array<Production> {
       startTime: new Date('2022-01-15'),
       endTime: new Date('2022-01-20'),
       status: 'COMPLETED',
+      quantity: 2,
       userEmail: 'john@example.com',
     },
   ];
