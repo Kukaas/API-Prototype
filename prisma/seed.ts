@@ -1,248 +1,244 @@
-import { connect } from 'http2';
-import {  prisma } from '../src/utils/db.server'
-import { get } from 'http';
-
+import { prisma } from '../src/utils/db.server';
 
 type User = {
-    name: string;
-    email: string;
-    password: string;
-    role: string;
-    position?: string;
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  position?: string;
 };
 
 type Production = {
-    productType: string;
-    startTime: Date;
-    endTime?: Date;
-    status: string;
-    userEmail: string;
-    userName: string;
+  productType: string;
+  startTime: Date;
+  endTime?: Date;
+  status: string;
+  userEmail: string;
 };
 
 type FinishedProduct = {
-    productType: string;
-    quantity: number;
-    unitPrice: number;
-    totalCost: number;
-    productionId: string;
+  productType: string;
+  quantity: number;
+  unitPrice: number;
+  totalCost: number;
+  productionId?: string;
 };
 
 type InventoryData = {
-    type: string;
-    quantity: number;
+  type: string;
+  quantity: number;
 };
 
 type SalesReport = {
-    salesDate: Date;
-    quantitySold: number;
-    totalRevenue: number;
-    finishedProductId: string;
+  salesDate: Date;
+  quantitySold: number;
+  totalRevenue: number;
+  finishedProductId?: string;
 };
 
-
 async function seed() {
-    // Create users
-    await Promise.all(
-        getUsers().map(async (user) => {
-            // Check if a user with the given email already exists
-            const existingUser = await prisma.user.findUnique({
-                where: { email: user.email },
-            });
-    
-            // If the user doesn't exist, create a new user
-            if (!existingUser) {
-                return prisma.user.create({
-                    data: {
-                        name: user.name,
-                        email: user.email,
-                        password: user.password,
-                        role: user.role,
-                        position: user.position,
-                    },
-                });
-            }
-        })
-    );
+  // Create users
+  const users = await Promise.all(
+    getUsers().map(async (user) => {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
 
-    // Create productions
-    await Promise.all(
-        getProductions().map((production) => {
-            return prisma.production.create({
-                data: {
-                    productType: production.productType,
-                    startTime: production.startTime,
-                    endTime: production.endTime,
-                    status: production.status,
-                    user: { 
-                        connect: { 
-                            email: production.userEmail,
-                            name: production.userName
-                        },
-                    },
-                },
-            })
-        })
-    );
+      if (!existingUser) {
+        return prisma.user.create({
+          data: {
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            role: user.role,
+            position: user.position,
+          },
+        });
+      }
 
-    
+      return existingUser;
+    })
+  );
 
-    // Create finished products
-    await Promise.all(
-        getFinishedProducts().map((finishedProduct) => {
-            // Check if the finishedProduct has a valid productionId
-            if (finishedProduct.productionId) {
-                return prisma.finishedProduct.create({
-                    data: {
-                        productType: finishedProduct.productType,
-                        quantity: finishedProduct.quantity,
-                        unitPrice: finishedProduct.unitPrice,
-                        totalCost: finishedProduct.totalCost,
-                        productionId: finishedProduct.productionId,
-                        inventoryData: {
-                            create: {
-                                type: finishedProduct.productType,
-                                quantity: finishedProduct.quantity,
-                            },
-                        },
-                    },
-                });
-            }
-        })
-    );
+  // Create productions
+  const productions = await Promise.all(
+    getProductions().map(async (production) => {
+      const user = await prisma.user.findUnique({
+        where: { email: production.userEmail },
+      });
 
+      if (user) {
+        return prisma.production.create({
+          data: {
+            productType: production.productType,
+            startTime: production.startTime,
+            endTime: production.endTime,
+            status: production.status,
+            user: { connect: { id: user.id } },
+          },
+        });
+      }
+    })
+  );
 
-    // Create inventory data
-    await Promise.all(
-        getInventoryData().map((inventoryData) => {
-            return prisma.inventoryData.create({
-                data: {
-                    type: inventoryData.type,
-                    quantity: inventoryData.quantity,
-                },
-            })
-        })
-    );
+  // Create finished products
+  const finishedProducts = await Promise.all(
+    getFinishedProducts().map(async (finishedProduct, index) => {
+      const production = productions[index];
 
-    // Create sales reports
-    await Promise.all(
-        getSalesReports().map((salesReport) => {
-            // Check if the salesReport has a valid finishedProductId
-            if (salesReport.finishedProductId || salesReport.productionId) {
-                return prisma.salesReport.create({
-                    data: {
-                        salesDate: salesReport.salesDate,
-                        quantitySold: salesReport.quantitySold,
-                        totalRevenue: salesReport.totalRevenue,
-                        finishedProduct: {
-                            connect: {
-                                id: salesReport.finishedProductId,
-                            },
-                        },
-                    },
-                });
-            }
-        })
-    );
+      if (!production) {
+        console.error(`Production with id ${finishedProduct.productionId} not found`);
+        return;
+      }
 
+      return prisma.finishedProduct.create({
+        data: {
+          productType: finishedProduct.productType,
+          quantity: finishedProduct.quantity,
+          unitPrice: finishedProduct.unitPrice,
+          totalCost: finishedProduct.totalCost,
+          productionId: production.id,
+          inventoryData: {
+            create: {
+              type: finishedProduct.productType,
+              quantity: finishedProduct.quantity,
+            },
+          },
+        },
+      });
+    })
+  );
+
+  // Create inventory data
+  await Promise.all(
+    getInventoryData().map((inventoryData) => {
+      return prisma.inventoryData.create({
+        data: {
+          type: inventoryData.type,
+          quantity: inventoryData.quantity,
+        },
+      });
+    })
+  );
+
+  // Create sales reports
+  await Promise.all(
+    getSalesReports().map(async (salesReport, index) => {
+      const finishedProduct = finishedProducts[index];
+
+      if (!finishedProduct) {
+        console.error(`FinishedProductId is not set for salesReport with id ${salesReport.finishedProductId}`);
+        return;
+      }
+
+      return prisma.salesReport.create({
+        data: {
+          salesDate: salesReport.salesDate,
+          quantitySold: salesReport.quantitySold,
+          totalRevenue: salesReport.totalRevenue,
+          finishedProduct: {
+            connect: { id: finishedProduct.id },
+          },
+        },
+      });
+    })
+  );
 }
 
 seed()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
 
-
-// Get mock data for users
+// Mock data functions
 function getUsers(): Array<User> {
-    return [
-        {
-            name: 'John Doe',
-            email: 'Tato@example.com',
-            password: 'password',
-            role: 'admin',
-            position: 'manager',
-        },
-        {
-            name: 'Jane Doe',
-            email: 'jane@gmail.com',
-            password: 'password',
-            role: 'employee',
-            position: 'sewer',
-        },
-    ];
+  return [
+    {
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password',
+      role: 'ADMIN',
+      position: 'Manager',
+    },
+    {
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      password: 'password',
+      role: 'EMPLOYEE',
+      position: 'Sewer',
+    },
+  ];
 }
 
-// Get mock data for productions
 function getProductions(): Array<Production> {
-    return [
-        {
-            productType: 'Polo',
-            startTime: new Date('2022-01-01'),
-            status: 'InProgress',
-            userEmail: 'jane@gmail.com'
-        },
-        {
-            productType: 'Pants',
-            startTime: new Date('2022-01-15'),
-            endTime: new Date('2022-01-20'),
-            status: 'Completed',
-            userEmail: 'Tato@example.com'
-        },
-    ];
+  return [
+    {
+      productType: 'Polo',
+      startTime: new Date('2022-01-01'),
+      status: 'IN_PROGRESS',
+      userEmail: 'jane@example.com',
+    },
+    {
+      productType: 'Pants',
+      startTime: new Date('2022-01-15'),
+      endTime: new Date('2022-01-20'),
+      status: 'COMPLETED',
+      userEmail: 'john@example.com',
+    },
+  ];
 }
 
-// Get mock data for finished products
 function getFinishedProducts(): Array<FinishedProduct> {
-    return [
-        {
-            productType: 'Polo',
-            quantity: 10,
-            unitPrice: 20,
-            totalCost: 200,
-        },
-        {
-            productType: 'Pants',
-            quantity: 20,
-            unitPrice: 30,
-            totalCost: 500,
-        },
-    ];
+  return [
+    {
+      productType: 'Polo',
+      quantity: 10,
+      unitPrice: 20,
+      totalCost: 200,
+      // Assuming the first production corresponds to this finished product
+      productionId: '', // Placeholder, will be set in the seed function
+    },
+    {
+      productType: 'Pants',
+      quantity: 20,
+      unitPrice: 30,
+      totalCost: 600,
+      // Assuming the second production corresponds to this finished product
+      productionId: '', // Placeholder, will be set in the seed function
+    },
+  ];
 }
 
-// Get mock data for inventory data
 function getInventoryData(): Array<InventoryData> {
-    return [
-        {
-            type: 'Sinulid',
-            quantity: 100,
-        },
-        {
-            type: 'Tela',
-            quantity: 200,
-        },
-    ];
+  return [
+    {
+      type: 'Sinulid',
+      quantity: 100,
+    },
+    {
+      type: 'Tela',
+      quantity: 200,
+    },
+  ];
 }
 
-// Get mock data for sales reports
 function getSalesReports(): Array<SalesReport> {
-    return [
-        {
-            salesDate: new Date('2022-01-31'),
-            quantitySold: 5,
-            totalRevenue: 100,
-        },
-        {
-            salesDate: new Date('2022-02-28'),
-            quantitySold: 10,
-            totalRevenue: 200,
-        },
-    ];
+  return [
+    {
+      salesDate: new Date('2022-01-31'),
+      quantitySold: 5,
+      totalRevenue: 100,
+      finishedProductId: '', // Placeholder, will be set in the seed function
+    },
+    {
+      salesDate: new Date('2022-02-28'),
+      quantitySold: 10,
+      totalRevenue: 200,
+      finishedProductId: '', // Placeholder, will be set in the seed function
+    },
+  ];
 }
-
-
-

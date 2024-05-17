@@ -1,5 +1,3 @@
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,16 +19,30 @@ model User {
   updatedAt    DateTime    @updatedAt
 }
 
+model Production {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String      @db.ObjectId  // The user who created the production
+  productType  String
+  startTime    DateTime
+  endTime      DateTime?
+  status       String      @default("IN_PROGRESS") // Status can be "IN_PROGRESS" or "COMPLETED"
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  user         User        @relation(fields: [userId], references: [id])
+}
 
-model SalesReport {
+model FinishedProduct {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  productId       String          @db.ObjectId @unique // The product that was sold
-  salesDate       DateTime  
-  quantitySold    Int
-  totalRevenue    Float
+  productType     String
+  productionId    String          @db.ObjectId @unique // The production that created the product
+  quantity        Int
+  unitPrice       Float
+  totalCost       Float
+  inventoryDataId String          @db.ObjectId
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  finishedProduct FinishedProduct @relation(fields: [productId], references: [id])
+  updatedAt       DateTime        @updatedAt 
+  inventoryData   InventoryData   @relation(fields: [inventoryDataId], references: [id])
+  salesReports    SalesReport[]
 }
 
 model InventoryData {
@@ -42,31 +54,13 @@ model InventoryData {
   finishedProducts FinishedProduct[]
 }
 
-model FinishedProduct {
+model SalesReport {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  productType     String
-  productionId    String          @db.ObjectId @unique // The production that created the product
-  quantity        Int
-  unitPrice       Float
-  totalCost       Float
-  salesReports    SalesReport[]
-  inventoryDataId String        @db.ObjectId
+  finishedProductId String          @db.ObjectId @unique // The product that was sold
+  salesDate       DateTime  
+  quantitySold    Int
+  totalRevenue    Float
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt 
-  inventoryData   InventoryData   @relation(fields: [inventoryDataId], references: [id])  
+  updatedAt       DateTime        @updatedAt
+  finishedProduct FinishedProduct @relation(fields: [finishedProductId], references: [id])
 }
-
-
-model Production {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String          @db.ObjectId  // The user who created the production
-  productType       String
-  startTime         DateTime
-  endTime           DateTime?
-  status            String          @default("IN_PROGRESS") // Status can be "IN_PROGRESS" or "COMPLETED"
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  user              User            @relation(fields: [userId], references: [id])
-}
-
-
