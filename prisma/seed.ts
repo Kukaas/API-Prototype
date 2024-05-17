@@ -20,6 +20,7 @@ type FinishedProduct = {
   productType: string;
   quantity: number;
   unitPrice: number;
+  status: string;
   totalCost: number;
   productionId?: string;
 };
@@ -37,113 +38,113 @@ type SalesReport = {
 };
 
 async function seed() {
-  // Create users
-  const users = await Promise.all(
-    getUsers().map(async (user) => {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email },
-      });
-
-      if (!existingUser) {
-        return prisma.user.create({
-          data: {
-            name: user.name,
-            email: user.email,
-            password: user.password,
-            role: user.role,
-            position: user.position,
-          },
+    // Create users
+    const users = await Promise.all(
+      getUsers().map(async (user) => {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
         });
-      }
-
-      return existingUser;
-    })
-  );
-
-  // Create productions
-  const productions = await Promise.all(
-    getProductions().map(async (production) => {
-      const user = await prisma.user.findUnique({
-        where: { email: production.userEmail },
-      });
-
-      if (user) {
-        return prisma.production.create({
-          data: {
-            productType: production.productType,
-            startTime: production.startTime,
-            endTime: production.endTime,
-            status: production.status,
-            user: { connect: { id: user.id } },
-          },
-        });
-      }
-    })
-  );
-
-  // Create finished products
-  const finishedProducts = await Promise.all(
-    getFinishedProducts().map(async (finishedProduct, index) => {
-      const production = productions[index];
-
-      if (!production) {
-        console.error(`Production with id ${finishedProduct.productionId} not found`);
-        return;
-      }
-
-      return prisma.finishedProduct.create({
-        data: {
-          productType: finishedProduct.productType,
-          quantity: finishedProduct.quantity,
-          unitPrice: finishedProduct.unitPrice,
-          totalCost: finishedProduct.totalCost,
-          productionId: production.id,
-          inventoryData: {
-            create: {
-              type: finishedProduct.productType,
-              quantity: finishedProduct.quantity,
+  
+        if (!existingUser) {
+          return prisma.user.create({
+            data: {
+              name: user.name,
+              email: user.email,
+              password: user.password,
+              role: user.role,
+              position: user.position,
             },
+          });
+        }
+  
+        return existingUser;
+      })
+    );
+  
+    // Create productions
+    const productions = await Promise.all(
+      getProductions().map(async (production) => {
+        const user = await prisma.user.findUnique({
+          where: { email: production.userEmail },
+        });
+  
+        if (user) {
+          return prisma.production.create({
+            data: {
+              productType: production.productType,
+              startTime: production.startTime,
+              endTime: production.endTime,
+              status: production.status,
+              user: { connect: { id: user.id } },
+            },
+          });
+        }
+      })
+    );
+  
+    // Create finished products
+    const finishedProducts = await Promise.all(
+      getFinishedProducts().map(async (finishedProduct, index) => {
+        const production = productions[index];
+  
+        if (!production) {
+          console.error(`Production for finished product not found at index ${index}`);
+          return null;
+        }
+  
+        if (production.status === 'IN_PROGRESS') {
+          console.warn(`Production with id ${production.id} is IN_PROGRESS and will not be added to finished products`);
+          return null;
+        }
+  
+        const createdFinishedProduct = await prisma.finishedProduct.create({
+          data: {
+            productType: finishedProduct.productType,
+            quantity: finishedProduct.quantity,
+            unitPrice: finishedProduct.unitPrice,
+            totalCost: finishedProduct.totalCost,
+            productionId: production.id,
+            inventoryData: {
+              create: {
+                type: finishedProduct.productType,
+                quantity: finishedProduct.quantity,
+              }
+            }
           },
-        },
-      });
-    })
-  );
-
-  // Create inventory data
-  await Promise.all(
-    getInventoryData().map((inventoryData) => {
-      return prisma.inventoryData.create({
-        data: {
-          type: inventoryData.type,
-          quantity: inventoryData.quantity,
-        },
-      });
-    })
-  );
-
-  // Create sales reports
-  await Promise.all(
-    getSalesReports().map(async (salesReport, index) => {
-      const finishedProduct = finishedProducts[index];
-
-      if (!finishedProduct) {
-        console.error(`FinishedProductId is not set for salesReport with id ${salesReport.finishedProductId}`);
-        return;
-      }
-
-      return prisma.salesReport.create({
-        data: {
-          salesDate: salesReport.salesDate,
-          quantitySold: salesReport.quantitySold,
-          totalRevenue: salesReport.totalRevenue,
-          finishedProduct: {
-            connect: { id: finishedProduct.id },
-          },
-        },
-      });
-    })
-  );
+        });
+  
+        if (production.status === 'SOLD') {
+          // Update inventory
+          await prisma.inventoryData.updateMany({
+            where: {
+              type: finishedProduct.productType,
+            },
+            data: {
+              quantity: {
+                decrement: finishedProduct.quantity,
+              },
+            },
+          });
+  
+          // Update sales report
+          const salesReport = getSalesReports()[index];
+          await prisma.salesReport.create({
+            data: {
+              salesDate: salesReport.salesDate,
+              quantitySold: salesReport.quantitySold,
+              totalRevenue: salesReport.totalRevenue,
+              finishedProduct: {
+                connect: { id: createdFinishedProduct.id },
+              },
+            },
+          });
+        }
+  
+        return createdFinishedProduct;
+      })
+    );
 }
+  
 
 seed()
   .catch((e) => {
@@ -193,25 +194,26 @@ function getProductions(): Array<Production> {
 }
 
 function getFinishedProducts(): Array<FinishedProduct> {
-  return [
-    {
-      productType: 'Polo',
-      quantity: 10,
-      unitPrice: 20,
-      totalCost: 200,
-      // Assuming the first production corresponds to this finished product
-      productionId: '', // Placeholder, will be set in the seed function
-    },
-    {
-      productType: 'Pants',
-      quantity: 20,
-      unitPrice: 30,
-      totalCost: 600,
-      // Assuming the second production corresponds to this finished product
-      productionId: '', // Placeholder, will be set in the seed function
-    },
-  ];
-}
+    return [
+      {
+        productType: 'Polo',
+        status: 'AVAILABLE',
+        quantity: 10,
+        unitPrice: 20,
+        totalCost: 200,
+        // No need to set productionId here
+      },
+      {
+        productType: 'Pants',
+        status: 'SOLD',
+        quantity: 20,
+        unitPrice: 30,
+        totalCost: 600,
+        // No need to set productionId here
+      },
+    ];
+  }
+  
 
 function getInventoryData(): Array<InventoryData> {
   return [
@@ -232,13 +234,11 @@ function getSalesReports(): Array<SalesReport> {
       salesDate: new Date('2022-01-31'),
       quantitySold: 5,
       totalRevenue: 100,
-      finishedProductId: '', // Placeholder, will be set in the seed function
     },
     {
       salesDate: new Date('2022-02-28'),
       quantitySold: 10,
       totalRevenue: 200,
-      finishedProductId: '', // Placeholder, will be set in the seed function
     },
   ];
 }

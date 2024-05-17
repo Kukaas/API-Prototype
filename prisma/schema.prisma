@@ -38,6 +38,7 @@ model FinishedProduct {
   quantity        Int
   unitPrice       Float
   totalCost       Float
+  status          String          @default("AVAILABLE") // Status can be "AVAILABLE" or "SOLD"
   inventoryDataId String          @db.ObjectId
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt 
