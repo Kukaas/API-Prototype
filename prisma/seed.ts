@@ -143,6 +143,18 @@ async function seed() {
         return createdFinishedProduct;
       })
     );
+
+    //Inventory Data
+    await Promise.all(
+        getInventoryData().map(async (inventory) => {
+          return prisma.inventoryData.create({
+            data: {
+              type: inventory.type,
+              quantity: inventory.quantity,
+            },
+          });
+        })
+      );
 }
   
 
