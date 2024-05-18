@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = env("MONGODB_URL")
 }
 
 model User {
@@ -24,6 +24,7 @@ model Production {
   userId       String      @db.ObjectId  // The user who created the production
   productType  String
   quantity     Int
+  unitPrice    Int
   startTime    DateTime
   endTime      DateTime?
   status       String      @default("IN_PROGRESS") // Status can be "IN_PROGRESS" or "COMPLETED"
@@ -37,8 +38,8 @@ model FinishedProduct {
   productType     String
   productionId    String          @db.ObjectId @unique // The production that created the product
   quantity        Int
-  unitPrice       Float
-  totalCost       Float
+  totalCost       Int
+  unitPrice       Int
   status          String          @default("AVAILABLE") // Status can be "AVAILABLE" or "SOLD"
   inventoryDataId String          @db.ObjectId
   createdAt       DateTime        @default(now())
@@ -50,7 +51,7 @@ model FinishedProduct {
 model InventoryData {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   type            String
-  quantity        Float 
+  quantity        Int 
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   finishedProducts FinishedProduct[]
@@ -59,9 +60,10 @@ model InventoryData {
 model SalesReport {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   finishedProductId String          @db.ObjectId @unique // The product that was sold
+  productType            String
   salesDate       DateTime  
   quantitySold    Int
-  totalRevenue    Float
+  totalRevenue    Int
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   finishedProduct FinishedProduct @relation(fields: [finishedProductId], references: [id])

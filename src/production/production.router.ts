@@ -48,7 +48,9 @@ productionRouter.post(
     '/',
     body('productType').isString().notEmpty(),
     body('startTime').isISO8601().toDate(),
+    body('unitPrice').isInt().toInt(),
     body('status').isString().notEmpty(),
+    body('quantity').isInt().toInt(),
     body('userEmail').isEmail(),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
@@ -57,12 +59,23 @@ productionRouter.post(
             return;
         }
 
-        const { productType, startTime, quantity, status, userEmail } = req.body;
+        const { productType, startTime, unitPrice, quantity, status, userEmail } = req.body;
 
+        const userExists = await prisma.user.findUnique({
+            where: {
+                email: userEmail
+            }
+        });
+        
+        if (!userExists) {
+            throw new Error('User not found');
+        }
+        
         try {
             const production = await productionServer.createProduction({
                 productType,
                 startTime,
+                unitPrice,
                 quantity,
                 status,
                 user: {
@@ -83,7 +96,9 @@ productionRouter.put(
     '/:id',
     body('productType').isString().notEmpty(),
     body('startTime').isISO8601().toDate(),
+    body('unitPrice').isInt().toInt(),
     body('status').isString().notEmpty(),
+    body('quantity').isInt().toInt(),
     body('userEmail').isEmail(),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
@@ -93,11 +108,13 @@ productionRouter.put(
         }
 
         const { id } = req.params;
-        const { productType, startTime, status, userEmail } = req.body;
+        const { productType, startTime, unitPrice, status, quantity, userEmail } = req.body;
         
         let updateData: any = {
             productType,
             startTime,
+            unitPrice,
+            quantity,
             status,
             user: {
                 connect: {

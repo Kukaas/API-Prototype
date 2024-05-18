@@ -6,6 +6,7 @@ type Production = {
     id: string;
     productType: string;
     startTime: Date;
+    unitPrice: number;
     quantity: number;
     endTime?: Date | null;
     status: string;
@@ -19,6 +20,7 @@ export const getProductions = async (): Promise<Production[]> => {
                 id: true,
                 productType: true,
                 startTime: true,
+                unitPrice: true,
                 quantity: true,
                 endTime: true,
                 status: true,
@@ -44,6 +46,7 @@ export const getProductionById = async (id: string): Promise<Production | null> 
                 id: true,
                 productType: true,
                 startTime: true,
+                unitPrice: true,
                 quantity: true,
                 endTime: true,
                 status: true,
@@ -69,6 +72,7 @@ export const createProduction = async (production: Prisma.ProductionCreateInput)
                 id: true,
                 productType: true,
                 startTime: true,
+                unitPrice: true,
                 quantity: true,
                 endTime: true,
                 status: true,
@@ -95,6 +99,7 @@ export const updateProduction = async (id: string, production: Prisma.Production
                 id: true,
                 productType: true,
                 startTime: true,
+                unitPrice: true,
                 quantity: true,
                 endTime: true,
                 status: true,
