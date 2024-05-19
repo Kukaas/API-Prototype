@@ -1,9 +1,9 @@
-import { inventoryRouter } from './../inventory/inventory.router';
 import express from 'express';
 import type {  Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 
-import * as finishedProductServer from './finishedProduct.server'
+import * as finishedProductServer from './finishedProduct.server';
+import * as salesReportServer from '../salesReport/salesReport.server';
 
 export const finishedProductRouter = express.Router();
 
@@ -36,7 +36,7 @@ finishedProductRouter.post(
                         id: productionId
                     }
                 }
-            }); // Pass productionId as a separate argument
+            }); 
             response.json(finishedProduct)
         } catch (error) {
             response.status(500).json({error: 'Error creating Finished Product'})
@@ -62,10 +62,36 @@ finishedProductRouter.put(
         }
 
         const { id } = request.params;
+        const { productType, unitPrice, status, quantity, totalCost } = request.body;
 
+        const finishedProductExist = await prisma.finishedProduct.findUnique({
+            where: {
+                id: id
+            }
+        });
+        
+        if (!finishedProductExist) {
+            response.status(404).json({ error: 'Production not found' });
+            return;
+        }
 
         try {
             const finishedProduct = await finishedProductServer.updateFinishedProduct(id, request.body);
+
+            if (status === 'SOLD') {
+                //Add to sales report
+                await salesReportServer.createSalesReport({
+                    productType,
+                    salesDate: new Date(),
+                    quantitySold: quantity,
+                    totalRevenue: unitPrice * quantity,
+                    finishedProduct: {
+                        connect: {
+                            id
+                        }
+                    }
+                });
+            }
             response.json({ finishedProduct, message: 'Finished Product updated successfully' });
         } catch (error) {
             response.status(500).json({ error: 'Error updating Finished Product' });

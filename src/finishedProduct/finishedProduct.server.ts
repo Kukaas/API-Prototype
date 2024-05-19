@@ -49,6 +49,7 @@ export const updateFinishedProduct = async (id: string, finishedProduct: Partial
                 status: true
             },
         });
+        
     } catch (error) {
         console.error('Error updating Finished Product:', error);
         throw error;

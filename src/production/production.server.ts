@@ -115,3 +115,29 @@ export const updateProduction = async (id: string, production: Prisma.Production
         throw error;
     }
 };
+
+//DLETE production by id
+export const deleteProduction = async (id: string): Promise<Production> => {
+    try {
+        return await prisma.production.delete({
+            where: { id },
+            select: {
+                id: true,
+                productType: true,
+                startTime: true,
+                unitPrice: true,
+                quantity: true,
+                endTime: true,
+                status: true,
+                user: {
+                    select: {
+                        email: true
+                    }
+                },
+            },
+        });
+    } catch (error) {
+        console.error('Error deleting production:', error);
+        throw error;
+    }
+};

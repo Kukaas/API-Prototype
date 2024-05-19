@@ -6,6 +6,7 @@ import { userRouter } from './user/user.router';
 import { productionRouter } from './production/production.router';
 import { inventoryRouter } from './inventory/inventory.router';
 import { finishedProductRouter } from './finishedProduct/finishedProduct.router';
+import { salesReportRouter } from './salesReport/salesReport.router';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/api/user', userRouter)
 app.use('/api/production', productionRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/finished-product', finishedProductRouter);
+app.use('/api/sales-report', salesReportRouter);
 
 
 app.listen(PORT, () => {

@@ -5,7 +5,6 @@ import { body, validationResult } from 'express-validator';
 import * as productionServer from './production.server';
 import * as inventoryServer from '../inventory/inventory.server';
 import * as finishedProductServer from '../finishedProduct/finishedProduct.server';
-import { connect } from 'http2';
 
 export const productionRouter = express.Router();
 
@@ -169,3 +168,17 @@ productionRouter.put(
     }
 );
 
+//DELETE production by id
+productionRouter.delete('/:id', async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        const production = await productionServer.deleteProduction(id);
+        if (!production) {
+            res.status(404).json({ error: 'Production not found' });
+            return;
+        }
+        res.json(production);
+    } catch (error) {
+        res.status(500).json({ error: 'Error deleting production' });
+    }
+});
