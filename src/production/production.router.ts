@@ -180,3 +180,14 @@ productionRouter.delete('/:id', async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error deleting production' });
     }
 });
+
+//GET production by email
+productionRouter.get('/email/:email', async (req: Request, res: Response) => {
+    const { email } = req.params;
+    try {
+        const productions = await productionServer.getProductionByEmail(email);
+        res.json(productions);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching productions by email' });
+    }
+});
