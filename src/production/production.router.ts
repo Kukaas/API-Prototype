@@ -96,7 +96,6 @@ productionRouter.post(
 productionRouter.put(
     '/:id',
     body('productType').isString().notEmpty(),
-    body('startTime').isISO8601().toDate(),
     body('unitPrice').isInt().toInt(),
     body('status').isString().notEmpty(),
     body('quantity').isInt().toInt(),
@@ -109,11 +108,10 @@ productionRouter.put(
         }
 
         const { id } = req.params;
-        const { productType, startTime, unitPrice, status, quantity, userEmail } = req.body;
+        const { productType,  unitPrice, status, quantity, userEmail } = req.body;
         
         let updateData: any = {
             productType,
-            startTime,
             unitPrice,
             quantity,
             status,
