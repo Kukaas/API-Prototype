@@ -4,11 +4,11 @@ import cors from 'cors';
 
 const serverless = require("serverless-http");
 
-import { userRouter } from './functions/user/user.router';
-import { productionRouter } from './functions/production/production.router';
-import { inventoryRouter } from './functions/inventory/inventory.router';
-import { finishedProductRouter } from './functions/finishedProduct/finishedProduct.router';
-import { salesReportRouter } from './functions/salesReport/salesReport.router';
+import { userRouter } from './user/user.router';
+import { productionRouter } from './production/production.router';
+import { inventoryRouter } from './inventory/inventory.router';
+import { finishedProductRouter } from './finishedProduct/finishedProduct.router';
+import { salesReportRouter } from './salesReport/salesReport.router';
 
 dotenv.config();
 
@@ -32,4 +32,4 @@ app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
 
-module.exports.handler = serverless(app);
+export default app;
