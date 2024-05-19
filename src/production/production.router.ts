@@ -4,6 +4,8 @@ import { body, validationResult } from 'express-validator';
 
 import * as productionServer from './production.server';
 import * as inventoryServer from '../inventory/inventory.server';
+import * as finishedProductServer from '../finishedProduct/finishedProduct.server';
+import { connect } from 'http2';
 
 export const productionRouter = express.Router();
 
@@ -143,8 +145,21 @@ productionRouter.put(
 
             if (status === 'COMPLETED') {
                 // Automatically add to inventory
-                let quantity = 1; // replace with the actual logic to determine the quantity
+                const quantity = production.quantity; // replace with the actual logic to determine the quantity
                 await inventoryServer.addToInventory(productType, quantity);
+                
+                await finishedProductServer.createFinishedProduct({
+                    productType: production.productType,
+                    quantity: production.quantity,
+                    status: 'AVAILABLE',
+                    unitPrice: production.unitPrice,
+                    totalCost: quantity * unitPrice,
+                    production: {
+                        connect: {
+                            id: production.id
+                        }
+                    }
+                });
             }
 
             res.json(production);

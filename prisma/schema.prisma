@@ -31,6 +31,7 @@ model Production {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   user         User        @relation(fields: [userId], references: [id])
+  finishedProducts FinishedProduct[]
 }
 
 model FinishedProduct {
@@ -41,10 +42,9 @@ model FinishedProduct {
   totalCost       Int
   unitPrice       Int
   status          String          @default("AVAILABLE") // Status can be "AVAILABLE" or "SOLD"
-  inventoryDataId String          @db.ObjectId
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt 
-  inventoryData   InventoryData   @relation(fields: [inventoryDataId], references: [id])
+  production      Production      @relation(fields: [productionId], references: [id]) // Connect to Production
   salesReports    SalesReport[]
 }
 
@@ -54,7 +54,6 @@ model InventoryData {
   quantity        Int 
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  finishedProducts FinishedProduct[]
 }
 
 model SalesReport {

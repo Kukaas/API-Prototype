@@ -106,12 +106,6 @@ async function seed() {
                     unitPrice: production.unitPrice,
                     totalCost,
                     productionId: production.id,
-                    inventoryData: {
-                        create: {
-                            type: finishedProduct.productType,
-                            quantity: finishedProduct.quantity,
-                        }
-                    }
                 },
             });
 
