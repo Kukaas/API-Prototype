@@ -85,7 +85,17 @@ export const getFinishedProduct = async(): Promise<FinishedProduct[]> => {
                 quantity: true,
                 unitPrice: true,
                 totalCost: true,
-                status: true
+                status: true,
+                production: {
+                    select: {
+                        id: true,
+                        user: { 
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
             }
         })
     } catch (error) {
