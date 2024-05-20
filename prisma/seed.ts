@@ -4,6 +4,8 @@ type User = {
   name: string;
   email: string;
   password: string;
+  address: string;
+  birthDate: Date;
   role: string;
   position?: string;
 };
@@ -164,6 +166,8 @@ function getUsers(): Array<User> {
             name: 'John Doe',
             email: 'john@example.com',
             password: 'password',
+            birthDate: new Date('1990-01-01'),
+            address: '123 Main St',
             role: 'ADMIN',
             position: 'Manager',
         },
@@ -171,6 +175,8 @@ function getUsers(): Array<User> {
             name: 'Jane Doe',
             email: 'jane@example.com',
             password: 'password',
+            birthDate: new Date('1995-01-01'),
+            address: '456 Main St',
             role: 'EMPLOYEE',
             position: 'Sewer',
         },

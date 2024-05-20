@@ -35,6 +35,8 @@ userRouter.post(
     '/',
     [
         body('name').isString().notEmpty(),
+        body('address').isString().notEmpty(),
+        body('birthDate').isDate(),
         body('email').isEmail(),
         body('password').isString().notEmpty(),
         body('role').isString().notEmpty(),
@@ -78,6 +80,8 @@ userRouter.put(
     '/:id',
     [
         body('name').optional().isString(),
+        body('address').isString().notEmpty(),
+        body('birthDate').isDate(),
         body('email').optional().isEmail(),
         body('password').optional().isString(),
         body('role').optional().isString(),

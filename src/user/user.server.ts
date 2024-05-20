@@ -3,6 +3,8 @@ import { prisma } from '../utils/db.server';
 type User = {
     id: string;
     name: string;
+    address: string;
+    birthDate: Date;
     email: string;
     password: string;
     role: string;
@@ -16,6 +18,8 @@ export const getUsers = async (): Promise<User[]> => {
             select: {
                 id: true,
                 name: true,
+                birthDate: true,
+                address: true,
                 email: true,
                 password: true,
                 role: true,
@@ -36,6 +40,8 @@ export const getUserById = async (id: string): Promise<User | null> => {
             select: {
                 id: true,
                 name: true,
+                birthDate: true,
+                address: true,
                 email: true,
                 password: true,
                 role: true,
@@ -56,6 +62,8 @@ export const createUser = async (user: User): Promise<User> => {
             select: {
                 id: true,
                 name: true,
+                birthDate: true,
+                address: true,
                 email: true,
                 password: true,
                 role: true,
@@ -77,6 +85,8 @@ export const updateUser = async (id: string, user: Partial<User>): Promise<User>
             select: {
                 id: true,
                 name: true,
+                birthDate: true,
+                address: true,
                 email: true,
                 password: true,
                 role: true,
@@ -97,6 +107,8 @@ export const deleteUser = async (id: string): Promise<User> => {
             select: {
                 id: true,
                 name: true,
+                birthDate: true,
+                address: true,
                 email: true,
                 password: true,
                 role: true,

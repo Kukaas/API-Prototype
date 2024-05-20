@@ -12,6 +12,8 @@ model User {
   name         String
   email        String      @unique
   password     String
+  address       String
+  birthDate     DateTime
   role         String      @default("EMPLOYEE") // Roles can be "EMPLOYEE" or "ADMIN"
   position     String?
   productions  Production[] // Productions created by the user
