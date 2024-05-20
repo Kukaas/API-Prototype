@@ -79,9 +79,22 @@ export const createUser = async (user: User): Promise<User> => {
 //UPDATE user
 export const updateUser = async (id: string, user: Partial<User>): Promise<User> => {
     try {
+        const updateData: Partial<User> = {
+            name: user.name,
+            email: user.email,
+            address: user.address,
+            password: user.password,
+            role: user.role,
+            position: user.position
+        };
+
+        if (user.birthDate) {
+            updateData.birthDate = new Date(user.birthDate);
+        }
+
         return await prisma.user.update({
             where: { id },
-            data: user,
+            data: updateData,
             select: {
                 id: true,
                 name: true,

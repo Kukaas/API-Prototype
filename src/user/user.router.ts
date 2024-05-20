@@ -50,6 +50,7 @@ userRouter.post(
         }
 
         const { name, email } = request.body;
+        const birthDate = new Date(request.body.birthDate).toISOString().split('T')[0];
 
         // Check if a user with the same email or name already exists
         const existingUser = await prisma.user.findFirst({
@@ -67,7 +68,7 @@ userRouter.post(
         }
 
         try {
-            const user = await userServer.createUser(request.body);
+            const user = await userServer.createUser({ ...request.body, birthDate });
             response.status(201).json({ user, message: 'User created successfully' });
         } catch (error) {
             response.status(500).json({ error: 'Error creating user' });
@@ -96,6 +97,7 @@ userRouter.put(
 
         const { id } = request.params;
         const { name, email } = request.body;
+        const birthDate = new Date(request.body.birthDate).toISOString().split('T')[0];
 
         // Check if a user with the same email or name already exists
         const existingUser = await prisma.user.findFirst({
@@ -113,7 +115,7 @@ userRouter.put(
         }
 
         try {
-            const user = await userServer.updateUser(id, request.body);
+            const user = await userServer.updateUser(id, { ...request.body, birthDate });
             response.json({ user, message: 'User updated successfully' });
         } catch (error) {
             response.status(500).json({ error: 'Error updating user' });
