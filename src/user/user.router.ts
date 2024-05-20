@@ -97,7 +97,7 @@ userRouter.put(
 
         const { id } = request.params;
         const { name, email } = request.body;
-        const birthDate = new Date(request.body.birthDate).toISOString().split('T')[0];
+        const birthDate = new Date(request.body.birthDate).toISOString();
 
         // Check if a user with the same email or name already exists
         const existingUser = await prisma.user.findFirst({
