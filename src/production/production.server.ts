@@ -116,31 +116,31 @@ export const updateProduction = async (id: string, production: Prisma.Production
     }
 };
 
-//DELETE production by id
 export const deleteProduction = async (id: string): Promise<Production> => {
     try {
+        // Find all FinishedProducts associated with the Production
+        const finishedProducts = await prisma.finishedProduct.findMany({
+            where: {
+                productionId: id
+            }
+        });
+
+        // Set their productionId to null
+        await Promise.all(finishedProducts.map(product =>
+            prisma.finishedProduct.update({
+                where: { id: product.id },
+                data: { productionId: null }
+            })
+        ));
+
+        // Now you can safely delete the Production
         return await prisma.production.delete({
-            where: { id },
-            select: {
-                id: true,
-                productType: true,
-                startTime: true,
-                unitPrice: true,
-                quantity: true,
-                endTime: true,
-                status: true,
-                user: {
-                    select: {
-                        email: true
-                    }
-                },
-            },
+            where: { id: id }
         });
     } catch (error) {
-        console.error('Error deleting production:', error);
         throw error;
     }
-};
+}
 
 //GET production by user email
 export const getProductionByEmail = async (email: string): Promise<Production[]> => {

@@ -8,7 +8,7 @@ type FinishedProduct = {
     status: string;
     unitPrice: number;
     totalCost?: number;
-    productionId?: string;
+    productionId?: string | null;
 };
 
 //CREATE finishedproduct
