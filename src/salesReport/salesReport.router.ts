@@ -54,6 +54,20 @@ salesReportRouter.get(
     }
 )
 
+//GET sales report by product type
+salesReportRouter.get(
+    '/product-type/:productType',
+    async (request: Request, response: Response) => {
+        const { productType } = request.params;
+        try {
+            const salesReports = await salesReportServer.getSalesReportByProductType(productType);
+            response.json(salesReports);
+        } catch (error) {
+            response.status(500).json({error: 'Error fetching Sales Reports'})
+        }
+    }
+)
+
 //GET salesReport by ID
 salesReportRouter.get(
     '/:id',

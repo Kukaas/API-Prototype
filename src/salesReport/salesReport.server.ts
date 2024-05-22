@@ -32,6 +32,30 @@ export const createSalesReport = async (salesReport: Prisma.SalesReportCreateInp
     }
 };
 
+//get sales report by product type
+export const getSalesReportByProductType = async (productType: string): Promise<SalesReport[]> => {
+    try {
+        const salesReports = await prisma.salesReport.findMany({
+            where: {
+                productType: productType,
+            },
+            select: {
+                id: true,
+                productType: true,
+                salesDate: true,
+                quantitySold: true,
+                totalRevenue: true,
+                createdAt: true,
+            }
+        });
+
+        return salesReports;
+    } catch (error) {
+        console.error('Error fetching sales reports:', error);
+        throw error;
+    }
+};
+
 //GET all sales reports
 export const getAllSalesReports = async (): Promise<SalesReport[]> => {
     try {
