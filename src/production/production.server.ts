@@ -118,20 +118,20 @@ export const updateProduction = async (id: string, production: Prisma.Production
 
 export const deleteProduction = async (id: string): Promise<Production> => {
     try {
-        // Find all FinishedProducts associated with the Production
-        const finishedProducts = await prisma.finishedProduct.findMany({
-            where: {
-                productionId: id
-            }
-        });
+        // // Find all FinishedProducts associated with the Production
+        // const finishedProducts = await prisma.finishedProduct.findMany({
+        //     where: {
+        //         productionId: id
+        //     }
+        // });
 
-        // Set their productionId to null
-        await Promise.all(finishedProducts.map(product =>
-            prisma.finishedProduct.update({
-                where: { id: product.id },
-                data: { productionId: null }
-            })
-        ));
+        // // Set their productionId to null
+        // await Promise.all(finishedProducts.map(product =>
+        //     prisma.finishedProduct.update({
+        //         where: { id: product.id },
+        //         data: { productionId: null }
+        //     })
+        // ));
 
         // Now you can safely delete the Production
         return await prisma.production.delete({

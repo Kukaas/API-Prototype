@@ -59,20 +59,20 @@ export const updateFinishedProduct = async (id: string, finishedProduct: Partial
 //DELETE finished product but not the sales report
 export const deleteFinishedProduct = async (id: string): Promise<FinishedProduct> => {
     try {
-        // Find all SalesReports associated with the FinishedProduct
-        const salesReports = await prisma.salesReport.findMany({
-            where: {
-                finishedProductId: id
-            }
-        });
+        // // Find all SalesReports associated with the FinishedProduct
+        // const salesReports = await prisma.salesReport.findMany({
+        //     where: {
+        //         finishedProductId: id
+        //     }
+        // });
 
-        // Set their finishedProductId to null
-        await Promise.all(salesReports.map(report =>
-            prisma.salesReport.update({
-                where: { id: report.id },
-                data: { finishedProductId: null }
-            })
-        ));
+        // // Set their finishedProductId to null
+        // await Promise.all(salesReports.map(report =>
+        //     prisma.salesReport.update({
+        //         where: { id: report.id },
+        //         data: { finishedProductId: null }
+        //     })
+        // ));
 
         // Now you can safely delete the FinishedProduct
         return await prisma.finishedProduct.delete({
