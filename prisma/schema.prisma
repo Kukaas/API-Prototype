@@ -59,13 +59,13 @@ model InventoryData {
 }
 
 model SalesReport {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
-  finishedProductId String          @unique @db.ObjectId // The product that was sold
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  finishedProductId String?          @unique @db.ObjectId // The product that was sold
   productType       String
   salesDate         DateTime
   quantitySold      Int
   totalRevenue      Int
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  finishedProduct   FinishedProduct @relation(fields: [finishedProductId], references: [id])
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  finishedProduct   FinishedProduct? @relation(fields: [finishedProductId], references: [id])
 }
