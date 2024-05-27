@@ -26,7 +26,9 @@ export const getProductions = async (): Promise<Production[]> => {
                 status: true,
                 user: {
                     select: {
-                        email: true
+                        id: true,
+                        email: true,
+                        name: true
                     }
                 },
             },
@@ -52,7 +54,9 @@ export const getProductionById = async (id: string): Promise<Production | null> 
                 status: true,
                 user: {
                     select: {
-                        email: true
+                        id: true,
+                        email: true,
+                        name: true
                     }
                 },
             },
@@ -78,7 +82,9 @@ export const createProduction = async (production: Prisma.ProductionCreateInput)
                 status: true,
                 user: {
                     select: {
-                        email: true
+                        id: true,
+                        email: true,
+                        name: true
                     }
                 },
             },
@@ -118,14 +124,14 @@ export const updateProduction = async (id: string, production: Prisma.Production
 
 export const deleteProduction = async (id: string): Promise<Production> => {
     try {
-        // // Find all FinishedProducts associated with the Production
+        // Find all FinishedProducts associated with the Production
         // const finishedProducts = await prisma.finishedProduct.findMany({
         //     where: {
         //         productionId: id
         //     }
         // });
 
-        // // Set their productionId to null
+        // Set their productionId to null
         // await Promise.all(finishedProducts.map(product =>
         //     prisma.finishedProduct.update({
         //         where: { id: product.id },
@@ -161,7 +167,8 @@ export const getProductionByEmail = async (email: string): Promise<Production[]>
                 status: true,
                 user: {
                     select: {
-                        email: true
+                        email: true,
+                        name: true
                     }
                 }
             }

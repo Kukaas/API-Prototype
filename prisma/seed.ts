@@ -132,9 +132,6 @@ async function seed() {
                       salesDate: salesReport.salesDate,
                       quantitySold: finishedProduct.quantity,
                       totalRevenue: salesReport.totalRevenue,
-                      finishedProduct: {
-                          connect: { id: createdFinishedProduct.id },
-                      },
                     },
                 });
             }

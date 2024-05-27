@@ -92,7 +92,7 @@ productionRouter.post(
     }
 );
 
-//UPDATE production
+//UPDATE production by email
 productionRouter.put(
     '/:id',
     body('productType').isString().notEmpty(),
@@ -151,11 +151,6 @@ productionRouter.put(
                     status: 'AVAILABLE',
                     unitPrice: production.unitPrice,
                     totalCost: quantity * unitPrice,
-                    production: {
-                        connect: {
-                            id: production.id
-                        }
-                    }
                 });
             }
 

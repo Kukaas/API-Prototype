@@ -85,11 +85,6 @@ finishedProductRouter.put(
                     salesDate: new Date(),
                     quantitySold: quantity,
                     totalRevenue: unitPrice * quantity,
-                    finishedProduct: {
-                        connect: {
-                            id
-                        }
-                    }
                 });
             }
             response.json({ finishedProduct, message: 'Finished Product updated successfully' });
